@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>LIFE OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#0f172a;--surface:#1e293b;--surface-light:#334155;--ink:#f8fafc;--muted:#94a3b8;--accent:#38bdf8;--accent-glow:rgba(56,189,248,0.15);--success:#4ade80;--warning:#fbbf24;--danger:#f87171;--gradient-1:#0ea5e9;--gradient-2:#8b5cf6;--line:rgba(148,163,184,0.12);--radius:16px;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:"Hind Siliguri","Noto Sans Bengali",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:15px;height:100vh;overflow:hidden;}
+#app{height:100vh;display:flex;flex-direction:column;}
+.app-header{background:var(--surface);border-bottom:1px solid var(--line);padding:0.8rem 1rem;display:flex;align-items:center;gap:0.6rem;flex-shrink:0;z-index:100;}
+.logo-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--gradient-1),var(--gradient-2));display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:700;color:white;}
+.logo-text{font-weight:700;font-size:1.05rem;background:linear-gradient(135deg,var(--gradient-1),var(--gradient-2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.header-date{margin-left:auto;font-size:0.72rem;color:var(--muted);background:var(--bg);padding:0.3rem 0.6rem;border-radius:8px;border:1px solid var(--line);}
+.app-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0.85rem;padding-bottom:90px;}
+.app-content::-webkit-scrollbar{width:4px;}
+.app-content::-webkit-scrollbar-thumb{background:var(--surface-light);border-radius:4px;}
+.bottom-nav{background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:0.3rem 0;flex-shrink:0;z-index:100;position:fixed;bottom:0;left:0;right:0;}
+.nav-item{background:none;border:none;color:var(--muted);font-family:inherit;font-size:0.62rem;display:flex;flex-direction:column;align-items:center;gap:0.1rem;padding:0.25rem 0.4rem;cursor:pointer;transition:all 0.2s;flex:1;}
+.nav-item .nav-icon{font-size:1.2rem;}
+.nav-item.active{color:var(--accent);}
+.screen{display:none;animation:fadeIn 0.25s ease;}
+.screen.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1.1rem;margin-bottom:0.8rem;}
+.card-title{font-size:0.98rem;font-weight:600;margin-bottom:0.7rem;display:flex;align-items:center;gap:0.4rem;}
+.section-subtitle{font-size:0.84rem;color:var(--muted);margin-bottom:0.7rem;line-height:1.6;}
+.hero-card{background:linear-gradient(135deg,rgba(14,165,233,0.1),rgba(139,92,246,0.1));border:1px solid rgba(56,189,248,0.15);border-radius:var(--radius);padding:1.5rem 1.2rem;margin-bottom:0.9rem;text-align:center;position:relative;overflow:hidden;}
+.hero-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gradient-1),var(--gradient-2));}
+.hero-card h2{font-size:1.15rem;font-weight:700;margin-bottom:0.6rem;background:linear-gradient(135deg,var(--ink),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.philosophy-flow{display:flex;align-items:center;justify-content:center;gap:0.4rem;flex-wrap:wrap;margin-top:1rem;}
+.flow-step{background:var(--bg);padding:0.5rem 0.9rem;border-radius:10px;border:1px solid var(--line);font-weight:600;color:var(--accent);font-size:0.8rem;white-space:nowrap;}
+.flow-arrow{color:var(--muted);font-size:1.1rem;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;margin-bottom:0.85rem;}
+.stat-box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0.75rem;text-align:center;}
+.stat-box .num{font-size:1.25rem;font-weight:700;color:var(--accent);}
+.stat-box .lbl{font-size:0.7rem;color:var(--muted);}
+.time-slot{display:flex;align-items:flex-start;gap:0.6rem;padding:0.75rem 0;border-bottom:1px solid var(--line);position:relative;}
+.time-slot:last-child{border-bottom:none;}
+.time-badge{background:var(--accent-glow);color:var(--accent);border:1px solid rgba(56,189,248,0.2);padding:0.25rem 0.5rem;border-radius:8px;font-size:0.72rem;font-weight:600;white-space:nowrap;min-width:58px;text-align:center;flex-shrink:0;}
+.time-badge.now{background:linear-gradient(135deg,var(--gradient-1),var(--gradient-2));color:white;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(56,189,248,0.4)}50%{box-shadow:0 0 0 6px rgba(56,189,248,0)}}
+.slot-content{flex:1;min-width:0;}
+.slot-title-input{background:transparent;border:none;color:var(--ink);font-family:inherit;font-size:0.9rem;font-weight:500;width:100%;padding:0.1rem 0;}
+.slot-title-input:focus{outline:none;border-bottom:1px solid var(--accent);}
+.slot-desc-input{background:transparent;border:none;color:var(--muted);font-family:inherit;font-size:0.78rem;width:100%;padding:0.1rem 0;margin-top:0.1rem;}
+.slot-desc-input:focus{outline:none;border-bottom:1px solid var(--accent);}
+.slot-check{width:20px;height:20px;border:2px solid var(--surface-light);border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;margin-top:0.15rem;}
+.slot-check.checked{background:var(--success);border-color:var(--success);}
+.slot-check.checked::after{content:"✓";color:white;font-size:0.65rem;font-weight:700;}
+.slot-actions{display:flex;gap:0.3rem;margin-top:0.4rem;}
+.slot-action-btn{background:var(--bg);border:1px solid var(--line);color:var(--muted);padding:0.2rem 0.5rem;border-radius:6px;font-size:0.7rem;font-family:inherit;cursor:pointer;}
+.modules-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;}
+.module-item{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:0.9rem 0.7rem;text-align:center;transition:all 0.2s;cursor:pointer;}
+.module-item:active{transform:scale(0.97);}
+.module-icon{font-size:1.6rem;margin-bottom:0.3rem;}
+.module-name{font-size:0.8rem;font-weight:600;}
+.module-desc{font-size:0.72rem;color:var(--muted);margin-top:0.15rem;}
+.chat-bubble{background:var(--accent-glow);border:1px solid rgba(56,189,248,0.15);border-radius:14px;padding:0.85rem;margin-bottom:0.6rem;font-size:0.87rem;}
+.chat-input-row{display:flex;gap:0.35rem;margin-top:0.5rem;}
+.chat-input{flex:1;padding:0.75rem 1rem;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-family:inherit;font-size:0.88rem;}
+.chat-input:focus{outline:none;border-color:var(--accent);}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.35rem;padding:0.8rem 1rem;border-radius:12px;border:none;font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;color:white;background:linear-gradient(135deg,var(--gradient-1),var(--gradient-2));width:100%;margin-top:0.5rem;}
+.btn-outline{background:transparent;color:var(--ink);border:1px solid var(--line);}
+.btn-sm{padding:0.5rem 0.8rem;font-size:0.8rem;width:auto;margin-top:0;}
+.btn-danger{background:rgba(248,113,113,0.2);color:var(--danger);border:1px solid rgba(248,113,113,0.3);}
+.btn-success{background:rgba(74,222,128,0.2);color:var(--success);border:1px solid rgba(74,222,128,0.3);}
+.btn-row{display:flex;gap:0.5rem;margin-top:0.6rem;}
+.btn-row .btn{flex:1;margin-top:0;}
+.diary-tabs{display:flex;gap:0.25rem;margin-bottom:0.7rem;background:var(--bg);padding:0.25rem;border-radius:12px;}
+.diary-tab{flex:1;padding:0.5rem;border:none;border-radius:10px;background:transparent;color:var(--muted);font-family:inherit;font-size:0.78rem;font-weight:500;cursor:pointer;transition:all 0.2s;}
+.diary-tab.active{background:var(--surface-light);color:var(--accent);}
+.diary-panel{display:none;}
+.diary-panel.active{display:block;}
+.diary-textarea{width:100%;min-height:130px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:0.9rem;color:var(--ink);font-family:inherit;font-size:0.92rem;resize:vertical;line-height:1.8;}
+.diary-textarea:focus{outline:none;border-color:var(--accent);}
+.diary-entry{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:0.8rem 1rem;cursor:pointer;margin-bottom:0.4rem;}
+.diary-entry-date{font-size:0.78rem;color:var(--accent);font-weight:600;margin-bottom:0.2rem;}
+.diary-entry-preview{font-size:0.85rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.history-filters{display:flex;gap:0.3rem;margin-bottom:0.7rem;overflow-x:auto;padding-bottom:0.2rem;}
+.history-filter{padding:0.35rem 0.8rem;border-radius:100px;border:1px solid var(--line);background:var(--bg);color:var(--muted);font-family:inherit;font-size:0.77rem;white-space:nowrap;cursor:pointer;}
+.history-filter.active{background:var(--accent-glow);color:var(--accent);border-color:var(--accent);}
+.history-item{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:0.85rem 1rem;margin-bottom:0.5rem;}
+.history-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem;}
+.history-item-date{font-weight:600;font-size:0.88rem;}
+.history-item-badge{font-size:0.72rem;padding:0.2rem 0.55rem;border-radius:100px;background:var(--accent-glow);color:var(--accent);}
+.history-progress-row{display:flex;align-items:center;gap:0.5rem;margin-top:0.3rem;}
+.history-progress-bar{flex:1;height:6px;background:var(--surface-light);border-radius:100px;overflow:hidden;}
+.history-progress-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--gradient-1),var(--gradient-2));}
+.history-progress-text{font-size:0.74rem;color:var(--accent);font-weight:600;}
+.habit-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.65rem;}
+.habit-card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:0.9rem;text-align:center;position:relative;}
+.habit-streak{font-size:1.5rem;font-weight:700;color:var(--accent);}
+.habit-name{font-size:0.8rem;color:var(--muted);margin-top:0.15rem;}
+.habit-days{display:flex;gap:3px;justify-content:center;margin-top:0.5rem;}
+.h-day{width:9px;height:9px;border-radius:2px;background:var(--surface-light);}
+.h-day.on{background:var(--success);}
+.habit-delete{position:absolute;top:6px;right:6px;background:none;border:none;color:var(--danger);font-size:1rem;cursor:pointer;padding:2px 6px;}
+.progress-bar{height:7px;background:var(--bg);border-radius:100px;overflow:hidden;margin-top:0.3rem;}
+.progress-fill{height:100%;border-radius:100px;transition:width 0.5s ease;}
+.license-screen{text-align:center;padding-top:2.5rem;}
+.license-logo{width:65px;height:65px;border-radius:20px;background:linear-gradient(135deg,var(--gradient-1),var(--gradient-2));display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:700;color:white;margin:0 auto 0.8rem;}
+.license-input{width:100%;padding:0.9rem;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-family:inherit;font-size:0.95rem;text-align:center;letter-spacing:0.06em;margin-bottom:0.55rem;}
+.license-input:focus{outline:none;border-color:var(--accent);}
+.license-status-msg{padding:0.65rem;border-radius:10px;text-align:center;font-size:0.86rem;font-weight:500;margin-top:0.5rem;display:none;}
+.license-status-msg.show{display:block;}
+.license-status-msg.ok{background:rgba(74,222,128,0.1);color:var(--success);border:1px solid rgba(74,222,128,0.2);}
+.license-status-msg.bad{background:rgba(248,113,113,0.1);color:var(--danger);border:1px solid rgba(248,113,113,0.2);}
+.empty-state{text-align:center;padding:1.8rem 1rem;color:var(--muted);}
+.empty-state-icon{font-size:2.2rem;margin-bottom:0.4rem;}
+.info-box{background:var(--accent-glow);border:1px solid rgba(56,189,248,0.12);border-radius:10px;padding:0.7rem 0.9rem;font-size:0.82rem;color:var(--muted);margin-bottom:0.7rem;line-height:1.7;}
+.review-questions{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:1rem;margin-top:0.6rem;}
+.review-q{display:flex;align-items:flex-start;gap:0.6rem;padding:0.5rem 0;border-bottom:1px solid var(--line);font-size:0.88rem;}
+.review-q:last-child{border-bottom:none;}
+.review-q .q-num{width:24px;height:24px;border-radius:50%;background:var(--accent-glow);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0;}
+#toast{position:fixed;bottom:75px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surface);color:var(--ink);padding:0.65rem 1.3rem;border-radius:12px;border:1px solid var(--line);font-size:0.86rem;opacity:0;transition:all 0.3s;z-index:999;white-space:nowrap;}
+
+/* Money module */
+.money-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.6rem;margin-bottom:1rem;}
+.money-box{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:0.9rem;text-align:center;}
+.money-box .label{font-size:0.72rem;color:var(--muted);}
+.money-box .value{font-size:1.1rem;font-weight:700;margin-top:0.2rem;}
+.money-box.income .value{color:var(--success);}
+.money-box.expense .value{color:var(--danger);}
+.money-box.savings .value{color:var(--accent);}
+.tx-row{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0;border-bottom:1px solid var(--line);}
+.tx-row:last-child{border-bottom:none;}
+.tx-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.tx-icon.income{background:rgba(74,222,128,0.1);}
+.tx-icon.expense{background:rgba(248,113,113,0.1);}
+.tx-icon.savings{background:rgba(56,189,248,0.1);}
+.tx-details{flex:1;min-width:0;}
+.tx-title{font-size:0.88rem;font-weight:500;}
+.tx-date{font-size:0.72rem;color:var(--muted);}
+.tx-amount{font-size:0.92rem;font-weight:700;white-space:nowrap;}
+.tx-amount.income{color:var(--success);}
+.tx-amount.expense{color:var(--danger);}
+.tx-amount.savings{color:var(--accent);}
+.form-row{display:flex;gap:0.5rem;margin-bottom:0.5rem;}
+.form-row .input{flex:1;margin-bottom:0;}
+.input{width:100%;padding:0.8rem 1rem;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-family:inherit;font-size:0.9rem;margin-bottom:0.5rem;}
+.input:focus{outline:none;border-color:var(--accent);}
+.select{width:100%;padding:0.8rem 1rem;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-family:inherit;font-size:0.9rem;margin-bottom:0.5rem;}
+
+/* Goal item */
+.goal-item{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:1rem;margin-bottom:0.5rem;}
+.goal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;}
+.goal-title{font-weight:600;font-size:0.9rem;}
+.goal-delete{background:none;border:none;color:var(--danger);font-size:1rem;cursor:pointer;padding:2px 6px;}
+.goal-meta{display:flex;gap:1rem;font-size:0.75rem;color:var(--muted);margin-top:0.3rem;}
+
+/* Habit tracker days */
+.habit-track-row{display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem;}
+.habit-track-label{font-size:0.72rem;color:var(--muted);width:30px;}
+.habit-track-days{display:flex;gap:4px;flex:1;}
+.h-track-day{width:28px;height:28px;border-radius:6px;background:var(--surface-light);display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:var(--muted);cursor:pointer;border:1px solid var(--line);}
+.h-track-day.done{background:var(--success);color:white;border-color:var(--success);}
+.h-track-day.today{border:2px solid var(--accent);}
+
+/* Vision */
+.vision-card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:1rem;margin-bottom:0.6rem;}
+.vision-card h4{color:var(--accent);font-size:0.9rem;margin-bottom:0.4rem;}
+.vision-card p{color:var(--muted);font-size:0.85rem;line-height:1.7;}
+.affirmation-item{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:0.8rem;margin-bottom:0.4rem;font-size:0.88rem;position:relative;}
+.affirmation-item .del-btn{position:absolute;top:4px;right:4px;background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.9rem;}
+
+/* Learning */
+.learning-item{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:0.9rem;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.7rem;}
+.learning-icon{font-size:1.5rem;}
+.learning-info{flex:1;}
+.learning-title{font-weight:600;font-size:0.9rem;}
+.learning-meta{font-size:0.75rem;color:var(--muted);margin-top:0.15rem;}
+.learning-status{padding:0.15rem 0.5rem;border-radius:6px;font-size:0.7rem;font-weight:600;}
+.status-reading{background:rgba(251,191,36,0.15);color:var(--warning);}
+.status-completed{background:rgba(74,222,128,0.15);color:var(--success);}
+.status-planned{background:var(--accent-glow);color:var(--accent);}
+
+/* Profile */
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--gradient-1),var(--gradient-2));display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:white;margin:0 auto 1rem;position:relative;overflow:hidden;}
+.profile-avatar img{width:100%;height:100%;object-fit:cover;}
+.profile-avatar .edit-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;opacity:0;transition:opacity 0.2s;}
+.profile-avatar:hover .edit-overlay{opacity:1;}
+#profilePhotoInput{display:none;}
+
+/* Demo clear notice */
+.demo-notice{background:rgba(251,191,36,0.08);border:1px dashed rgba(251,191,36,0.3);border-radius:10px;padding:0.6rem 0.8rem;font-size:0.8rem;color:var(--warning);margin-bottom:0.8rem;text-align:center;}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="app-header">
+<div class="logo-icon">L</div>
+<div class="logo-text">LIFE OS</div>
+<div class="header-date" id="headerDate"></div>
+</div>
+
+<div class="app-content">
+
+<!-- ===== HOME ===== -->
+<div id="screen-home" class="screen active">
+<div class="hero-card">
+<h2>Plan → Act → Track → Reflect → Improve</h2>
+<p style="color:var(--muted);font-size:0.85rem;">স্বপ্নকে বাস্তব পদক্ষেপের সঙ্গে যুক্ত করাই LIFE OS-এর দর্শন</p>
+<div class="philosophy-flow">
+<div class="flow-step">কী করেছি?</div><span class="flow-arrow">→</span>
+<div class="flow-step">কী শিখেছি?</div><span class="flow-arrow">→</span>
+<div class="flow-step">কী বদলাবো?</div>
+</div>
+</div>
+
+<div class="stats-row">
+<div class="stat-box"><div class="num" id="statCompleted">0</div><div class="lbl">সম্পন্ন</div></div>
+<div class="stat-box"><div class="num" id="statPending">0</div><div class="lbl">বাকি</div></div>
+<div class="stat-box"><div class="num" id="statPercent">0%</div><div class="lbl">অগ্রগতি</div></div>
+</div>
+
+<div class="card">
+<div class="card-title">📅 আজকের সময়সূচি</div>
+<div class="section-subtitle" id="todayDateDisplay"></div>
+<div class="info-box">💡 <strong>টিপ:</strong> প্রতিটি কাজের নাম ও বিবরণ ট্যাপ করে এডিট করতে পারবেন। আপনার মতো করে সাজিয়ে নিন!</div>
+<div id="timeSchedule"></div>
+<div class="btn-row">
+<button class="btn btn-sm btn-outline" onclick="resetSchedule()">🔄 রিসেট</button>
+<button class="btn btn-sm btn-outline" onclick="saveScheduleData()">💾 সেভ</button>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">◉ ৮টি মডিউল — এক ছাতার নিচে</div>
+<div class="modules-grid">
+<div class="module-item" onclick="navTo('money')"><div class="module-icon">💰</div><div class="module-name">My Money</div><div class="module-desc">আয়-ব্যয় ও সঞ্চয়</div></div>
+<div class="module-item" onclick="navTo('goals')"><div class="module-icon">🎯</div><div class="module-name">My Goals</div><div class="module-desc">লক্ষ্য ও অগ্রগতি</div></div>
+<div class="module-item" onclick="navTo('vision')"><div class="module-icon">👁️</div><div class="module-name">My Vision</div><div class="module-desc">ধ্যান ও Affirmation</div></div>
+<div class="module-item" onclick="navTo('learning')"><div class="module-icon">📚</div><div class="module-name">My Learning</div><div class="module-desc">বই ও দক্ষতা</div></div>
+<div class="module-item" onclick="navTo('habits')"><div class="module-icon">🔄</div><div class="module-name">My Habits</div><div class="module-desc">দৈনিক অভ্যাস</div></div>
+<div class="module-item" onclick="navTo('history')"><div class="module-icon">📊</div><div class="module-name">My Progress</div><div class="module-desc">রিপোর্ট ও মূল্যায়ন</div></div>
+<div class="module-item" onclick="navTo('diary')"><div class="module-icon">📓</div><div class="module-name">My Diary</div><div class="module-desc">প্ল্যান ও রিভিউ</div></div>
+<div class="module-item" onclick="navTo('ai')"><div class="module-icon">🤖</div><div class="module-name">AI Assistant</div><div class="module-desc">জীবন পরামর্শ</div></div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">🧠 আজকের Affirmation</div>
+<div class="chat-bubble" id="dailyAffirmation"></div>
+</div>
+</div>
+
+<!-- ===== MONEY SCREEN ===== -->
+<div id="screen-money" class="screen">
+<div class="card">
+<div class="card-title">💰 আমার অর্থ ব্যবস্থাপনা</div>
+<div class="section-subtitle">আয়, ব্যয় ও সঞ্চয় ট্র্যাক করুন</div>
+
+<div class="money-summary">
+<div class="money-box income"><div class="label">মোট আয়</div><div class="value" id="totalIncome">৳ ০</div></div>
+<div class="money-box expense"><div class="label">মোট ব্যয়</div><div class="value" id="totalExpense">৳ ০</div></div>
+<div class="money-box savings"><div class="label">সঞ্চয়</div><div class="value" id="totalSavings">৳ ০</div></div>
+</div>
+
+<div class="progress-bar" style="margin-bottom:1rem;height:10px;"><div class="progress-fill" id="budgetProgress" style="width:0%"></div></div>
+<div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--muted);margin-bottom:1rem;">
+<span>বাজেট ব্যবহার: <span id="budgetPercent">0%</span></span>
+<span>বাকি: <span id="budgetRemaining">৳ ০</span></span>
+</div>
+
+<div class="demo-notice" id="demoMoneyNotice" style="display:none;">
+⚠️ নিচের লেনদেনগুলো <strong>ডেমো ডেটা</strong>। আপনার প্রথম লেনদেন যোগ করলে এগুলো সরে যাবে।
+</div>
+
+<div class="card" style="background:var(--bg);margin-bottom:1rem;">
+<div class="card-title" style="font-size:0.92rem;">➕ নতুন লেনদেন যোগ করুন</div>
+<input type="text" class="input" id="txDesc" placeholder="বিবরণ (যেমন: বেতন, বাড়ি ভাড়া, জলের বিল)">
+<div class="form-row">
+<input type="number" class="input" id="txAmount" placeholder="টাকার পরিমাণ" style="flex:1;">
+<select class="select" id="txType" style="width:100px;flex:0 0 auto;margin-bottom:0;">
+<option value="income">আয় (+)</option>
+<option value="expense">ব্যয় (-)</option>
+</select>
+</div>
+<input type="date" class="input" id="txDate" style="color-scheme:dark;">
+<select class="select" id="txCategory">
+<option value="">বিভাগ বেছে নিন...</option>
+<option value="salary">বেতন / আয়</option>
+<option value="food">খাবার</option>
+<option value="rent">বাড়ি ভাড়া</option>
+<option value="transport">পরিবহন</option>
+<option value="utilities">জল / বিদ্যুৎ / গ্যাস</option>
+<option value="education">শিক্ষা / কোর্স</option>
+<option value="health">স্বাস্থ্য</option>
+<option value="entertainment">বিনোদন</option>
+<option value="savings">সঞ্চয়</option>
+<option value="other">অন্যান্য</option>
+</select>
+<button class="btn btn-sm" style="width:100%;" onclick="addTransaction()">💾 লেনদেন যোগ করুন</button>
+</div>
+
+<div class="card-title" style="margin-top:0.5rem;">📋 সাম্প্রতিক লেনদেন</div>
+<div id="transactionList">
+<div class="empty-state"><div class="empty-state-icon">💰</div><div>কোনো লেনদেন নেই। উপরে যোগ করুন!</div></div>
+</div>
+</div>
+</div>
+
+<!-- ===== GOALS SCREEN ===== -->
+<div id="screen-goals" class="screen">
+<div class="card">
+<div class="card-title">🎯 আমার লক্ষ্যসমূহ</div>
+<div class="section-subtitle">লক্ষ্য নির্ধারণ, অগ্রগতি ট্র্যাক ও রিল্পনা</div>
+
+<div class="card" style="background:var(--bg);margin-bottom:1rem;">
+<div class="card-title" style="font-size:0.92rem;">➕ নতুন লক্ষ্য যোগ করুন</div>
+<input type="text" class="input" id="goalTitle" placeholder="লক্ষ্যের নাম (যেমন: ওজন ১০ কেজি কমানো)">
+<div class="form-row">
+<select class="select" id="goalPeriod" style="flex:1;">
+<option value="daily">দৈনিক</option>
+<option value="weekly">সাপ্তাহিক</option>
+<option value="monthly" selected>মাসিক</option>
+<option value="yearly">বার্ষিক</option>
+</select>
+<input type="number" class="input" id="goalTarget" placeholder="লক্ষ্য (যেমন: ১২)" style="flex:1;margin-bottom:0;">
+</div>
+<input type="text" class="input" id="goalUnit" placeholder="একক (যেমন: কেজি, বই, ঘণ্টা)">
+<button class="btn btn-sm" style="width:100%;" onclick="addGoal()">🎯 লক্ষ্য যোগ করুন</button>
+</div>
+
+<div id="goalsList"></div>
+</div>
+</div>
+
+<!-- ===== VISION SCREEN ===== -->
+<div id="screen-vision" class="screen">
+<div class="card">
+<div class="card-title">👁️ আমার Vision</div>
+<div class="section-subtitle">ধ্যান, Affirmation ও Visualization — মনকে শক্তিশালী করুন</div>
+
+<div class="card" style="background:var(--bg);margin-bottom:1rem;">
+<div class="card-title" style="font-size:0.92rem;">➕ নতুন Affirmation যোগ করুন</div>
+<textarea class="diary-textarea" id="newAffirmation" style="min-height:70px;margin-bottom:0.5rem;" placeholder="আপনার Affirmation লিখুন...
+
+যেমন: আমি প্রতিদিন উন্নতি করছি। আমি আমার লক্ষ্য অর্জন করতে পারব।"></textarea>
+<button class="btn btn-sm" style="width:100%;" onclick="addAffirmation()">✨ Affirmation যোগ করুন</button>
+</div>
+
+<div class="card-title" style="margin-top:0.5rem;">✨ আমর Affirmations</div>
+<div id="affirmationList"></div>
+
+<div class="card" style="margin-top:1rem;">
+<div class="card-title">🧘 Visualization Zone</div>
+<div class="vision-card">
+<h4>🎯 আমার স্বপ্নের ছবি</h4>
+<textarea class="diary-textarea" id="visionBoard" style="min-height:100px;margin-bottom:0.5rem;" placeholder="আপনার স্বপ্নের ছবি কী? বিস্তারিত লিখুন...
+
+যমন: আমি দেখছি আমি সুস্থ, সফল, ও সুখী। আমার পরিবার আমার পাশে আছে..."></textarea>
+<button class="btn btn-sm" style="width:100%;" onclick="saveVisionBoard()">💾 সেভ করুন</button>
+</div>
+<div class="vision-card">
+<h4>🙏 কৃতজ্ঞতা জার্নাল</h4>
+<textarea class="diary-textarea" id="gratitudeJournal" style="min-height:80px;margin-bottom:0.5rem;" placeholder="আজকের জন্য কৃতজ্ঞ...
+১.
+২.
+৩."></textarea>
+<button class="btn btn-sm" style="width:100%;" onclick="saveGratitude()">💾 সেভ করুন</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ===== LEARNING SCREEN ===== -->
+<div id="screen-learning" class="screen">
+<div class="card">
+<div class="card-title">📚 আমার Learning</div>
+<div class="section-subtitle">নতুন দক্ষতা, বই, কোর্স ও প্রশিক্ষণের রেকর্ড</div>
+
+<div class="card" style="background:var(--bg);margin-bottom:1rem;">
+<div class="card-title" style="font-size:0.92rem;">➕ নতুন শেখার আইটেম যোগ করুন</div>
+<input type="text" class="input" id="learnTitle" placeholder="শেখার বিষয় (যেমন: Python Programming, গিটার)">
+<div class="form-row">
+<select class="select" id="learnType" style="flex:1;">
+<option value="book">📖 বই</option>
+<option value="course">🎓 কোর্স</option>
+<option value="skill">🛠️ দক্ষতা</option>
+<option value="training">🏋️ প্রশিক্ষণ</option>
+<option value="language">🗣️ ভাষা</option>
+</select>
+<select class="select" id="learnStatus" style="flex:1;margin-bottom:0;">
+<option value="planned">পরিকল্পিত</option>
+<option value="reading" selected>চলছে</option>
+<option value="completed">সম্পন্ন</option>
+</select>
+</div>
+<input type="text" class="input" id="learnNote" placeholder="নোট (ঐচ্ছিক)">
+<button class="btn btn-sm" style="width:100%;" onclick="addLearning()">📚 যোগ করুন</button>
+</div>
+
+<div id="learningList"></div>
+</div>
+</div>
+
+<!-- ===== HABITS SCREEN ===== -->
+<div id="screen-habits" class="screen">
+<div class="card">
+<div class="card-title">🔄 দৈনিক অভ্যাস ট্র্যাকার</div>
+<div class="section-subtitle">২১ দিন একটানা করল অভ্যাস স্বাভাবিক হয়ে যায়</div>
+
+<div class="card" style="background:var(--bg);margin-bottom:1rem;">
+<div class="card-title" style="font-size:0.92rem;">➕ নতুন অভ্যাস যোগ করুন</div>
+<input type="text" class="input" id="habitName" placeholder="অভ্যাসের নাম (যেমন: প্রতিদিন ৩০ মিনিট ধ্যান)">
+<select class="select" id="habitFreq">
+<option value="daily">প্রতিদিন</option>
+<option value="weekly">সাপ্তাহিক</option>
+</select>
+<button class="btn btn-sm" style="width:100%;" onclick="addHabit()">🔄 অভ্যাস যোগ করুন</button>
+</div>
+
+<div id="habitsList"></div>
+</div>
+<div class="info-box">💡 প্রতিটি অভ্যাস ২১ দিন একটানা করলে স্বাভাবিক হয়ে যায়। ছোট ছোট পদক্ষেপেই বড় পরিবর্তন আসে।</div>
+</div>
+
+<!-- ===== DIARY SCREEN ===== -->
+<div id="screen-diary" class="screen">
+<div class="card">
+<div class="card-title">📓 প্ল্যানিং ডায়েরি</div>
+<div class="diary-tabs">
+<button class="diary-tab active" onclick="switchDiaryTab('today')">আজকের প্ল্যান</button>
+<button class="diary-tab" onclick="switchDiaryTab('tomorrow')">কালকের প্ল্যান</button>
+<button class="diary-tab" onclick="switchDiaryTab('past')">পুরোনো রেকর্ড</button>
+</div>
+
+<div id="diary-panel-today" class="diary-panel active">
+<div class="section-subtitle">আজকের দিনটি কীভাবে কাটবে — লিখে রাখুন। পরে PDF-এ এক্সপোর্ট করতে পারবেন।</div>
+<textarea class="diary-textarea" id="diaryToday" placeholder="আজকের প্ল্যান লিখুন...
+
+যেমন:
+→ সকাল ৬টা — ঘুম থেকে ওঠা ও ধ্যান
+→ সকাল ৭টা — ব্যায়াম
+→ সকাল ৯টা — গুরুত্বপূর্ণ কাজ (Deep Work)
+→ দুপুর ২টো — নতুন দক্ষতা শেখা
+→ রাত ৯টা — দিনের রিভিউ"></textarea>
+<div class="btn-row">
+<button class="btn btn-sm" onclick="saveDiary('today')">💾 সেভ</button>
+<button class="btn btn-sm btn-outline" onclick="exportDiaryPDF('today')">📄 PDF</button>
+</div>
+</div>
+
+<div id="diary-panel-tomorrow" class="diary-panel">
+<div class="section-subtitle">আগামীকালের পরিকল্পনা — এখনই লিখে রাখুন। আজ রাতে কালকের পরিকল্পনা করলে আগামীকাল আরও উৎপাদনশীল হবেন।</div>
+<textarea class="diary-textarea" id="diaryTomorrow" placeholder="কালকের প্ল্যান লিখুন...
+
+আজ রাতে কালকের পিকল্পনা করুন — সকালে সময় বাঁচবে।"></textarea>
+<div class="btn-row">
+<button class="btn btn-sm" onclick="saveDiary('tomorrow')">💾 সেভ</button>
+<button class="btn btn-sm btn-outline" onclick="exportDiaryPDF('tomorrow')">📄 PDF</button>
+</div>
+</div>
+
+<div id="diary-panel-past" class="diary-panel">
+<div class="section-subtitle">আপনার সব পুরোনো প্ল্যান ও ডায়েি এখানে। কোনো একটি ট্যাপ করে আবার দেখতে পারবেন।</div>
+<div class="diary-list" id="pastDiaryList">
+<div class="empty-state"><div class="empty-state-icon">📭</div><div>এখনো কোনো রেকর্ড নেই। আজ থেকে শুরু করুন!</div></div>
+</div>
+<button class="btn btn-outline" style="margin-top:0.7rem;" onclick="exportAllDiaryPDF()">📑 সব রেকর্ড PDF</button>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">📝 সাপ্তাহিক রিভিউ</div>
+<div class="section-subtitle">প্রতি সপ্তাহের শেষে এই তিনটি প্রশ্নের উত্তর লিখুন:</div>
+<div class="review-questions">
+<div class="review-q"><div class="q-num">১</div><div>এই সপ্তাহে আমি কী কী করেছি?</div></div>
+<div class="review-q"><div class="q-num">২</div><div>এই সপ্তাহে আমি কী নতুন শিখেছি?</div></div>
+<div class="review-q"><div class="q-num">৩</div><div>পরের সপ্তাহে আমি কী বদলাবো?</div></div>
+</div>
+<textarea class="diary-textarea" id="weeklyReviewInput" style="min-height:100px;margin-top:0.7rem;" placeholder="আপনার সাপ্তাহিক রিভিউ লিখুন..."></textarea>
+<div class="btn-row">
+<button class="btn btn-sm" onclick="saveWeeklyReview()">💾 সেভ</button>
+<button class="btn btn-sm btn-outline" onclick="exportWeeklyPDF()">📄 PDF</button>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">📝 দ্রুত নোট</div>
+<textarea class="diary-textarea" id="quickNote" style="min-height:70px;" placeholder="যেকোনো কিছু নোট করুন..."></textarea>
+<button class="btn btn-sm" style="width:auto;margin-top:0.5rem;" onclick="saveQuickNote()">💾 নোট সেভ</button>
+<div id="quickNotesList" style="margin-top:0.7rem;"></div>
+</div>
+</div>
+
+<!-- ===== HISTORY SCREEN ===== -->
+<div id="screen-history" class="screen">
+<div class="card">
+<div class="card-title">📊 আমার অগ্রগতি</div>
+<div class="history-filters">
+<button class="history-filter active" onclick="filterHistory('week')">এই সপ্তাহ</button>
+<button class="history-filter" onclick="filterHistory('month')">এই মাস</button>
+<button class="history-filter" onclick="filterHistory('all')">সব রেকর্ড</button>
+</div>
+<div id="historyList"></div>
+<button class="btn btn-outline" style="margin-top:0.7rem;" onclick="exportHistoryPDF()">📊 রিপোর্ট PDF</button>
+</div>
+
+<div class="card">
+<div class="card-title">🏆 সাপ্তাহিক সারাংশ</div>
+<div class="section-subtitle">Plan → Act → Track → Reflect → Improve</div>
+<div id="weeklySummary"></div>
+</div>
+</div>
+
+<!-- ===== AI SCREEN ===== -->
+<div id="screen-ai" class="screen">
+<div class="card">
+<div class="card-title">🤖 AI লাইফ অ্যাসিস্ট্যান্ট</div>
+<div id="aiChatArea">
+<div class="chat-bubble">👋 নমস্কা! আমি আপনার AI লাইফ অ্যাসিস্ট্যান্ট। আজকের দিনটি কেমন কাটছে? আমি আপনাকে পরিকল্পনা, অগ্রাধিকার ও উন্নতির পরামর্শ দিতে পারি।</div>
+</div>
+<div class="chat-input-row">
+<input type="text" class="chat-input" id="aiInput" placeholder="AI-কে কিছু জিজ্ঞাসা করুন...">
+<button class="btn btn-sm" style="width:auto;padding:0.75rem 1rem;" onclick="sendAiMessage()">➤</button>
+</div>
+</div>
+<div class="info-box">💡 প্রশ্নের উদাহরণ: "আজকে কী করবো?" / "লক্ষ্যে পৌঁছতে কী করবো?" / "সময় ব্যবস্থাপনার টিপস দিন"</div>
+</div>
+
+<!-- ===== MORE / PROFILE SCREEN ===== -->
+<div id="screen-more" class="screen">
+<div class="card" style="text-align:center;padding-top:1.5rem;">
+<div class="profile-avatar" id="profileAvatar" onclick="document.getElementById('profilePhotoInput').click()">
+<span id="profileInitial">আ</span>
+<div class="edit-overlay">📷 পরিবর্তন</div>
+</div>
+<input type="file" id="profilePhotoInput" accept="image/*" onchange="updateProfilePhoto(event)">
+<input type="text" class="input" id="profileName" value="আপনার নাম" style="text-align:center;font-size:1.1rem;font-weight:600;margin-bottom:0.3rem;" onchange="saveProfile()">
+<select class="select" id="profileMode" onchange="saveProfile()" style="max-width:200px;margin:0 auto 0.5rem;">
+<option value="Student">🎓 Student</option>
+<option value="Professional" selected>💼 Professional</option>
+<option value="Home Manager">🏠 Home Manager</option>
+<option value="Athlete">🏃 Athlete</option>
+<option value="Business">📈 Business</option>
+<option value="Celebrity">🎬 Celebrity</option>
+</select>
+<div style="font-size:0.82rem;color:var(--muted);">
+<div>📦 প্যাকেজ: <span style="color:var(--success)">Life Master</span></div>
+<div>📅 যোগদান: <span id="profileJoinDate"></span></div>
+<div>🔐 লাইসেন্স: <span style="font-size:0.75rem;">L1FE-0SXX-XXXX-XXXX</span></div>
+</div>
+<button class="btn btn-sm" style="width:auto;margin-top:0.8rem;" onclick="saveProfile()">💾 প্রোফাইল সেভ</button>
+</div>
+
+<div class="card">
+<div class="card-title">⚙️ সেটিংস</div>
+<div style="display:flex;flex-direction:column;gap:0.1rem;">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:0.55rem 0;border-bottom:1px solid var(--line);cursor:pointer;" onclick="showToast('শীঘ্রই আসছে')"><span>🌙 ডার্ক মোড</span><span style="color:var(--success);font-size:0.82rem;">অন</span></div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:0.55rem 0;border-bottom:1px solid var(--line);cursor:pointer;" onclick="showToast('শীঘ্রই আসছে')"><span>🔔 নোটিফিকেশন</span><span style="color:var(--success);font-size:0.82rem;">অন</span></div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:0.55rem 0;border-bottom:1px solid var(--line);cursor:pointer;" onclick="showToast('শীঘ্রই আসছে')"><span>🌐 ভাষা</span><span style="color:var(--muted);font-size:0.82rem;">বাংলা</span></div>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:0.55rem 0;cursor:pointer;" onclick="backupData()"><span>💾 ডেটা ব্যাকআপ</span><span style="color:var(--muted);font-size:0.82rem;">ট্যাপ করুন</span></div>
+</div>
+</div>
+
+<button class="btn btn-outline" style="color:var(--danger);border-color:rgba(248,113,113,0.3);" onclick="logout()">🚪 লআউট</button>
+</div>
+
+<!-- ===== LICENSE SCREEN ===== -->
+<div id="screen-license" class="screen license-screen">
+<div class="license-logo">L</div>
+<h2 style="font-size:1.35rem;margin-bottom:0.25rem;">LIFE OS</h2>
+<p style="color:var(--muted);margin-bottom:1.8rem;font-size:0.88rem;">Your Life, Your Way</p>
+
+<div class="card" style="text-align:left;max-width:360px;margin:0 auto;">
+<div class="card-title">🔐 লাইসেন্স অ্যাক্টিভেশন</div>
+<p style="color:var(--muted);font-size:0.84rem;margin-bottom:0.8rem;">আপনার ইমেইল ও লাইসেন্স কী দিয়ে অ্যাক্টিভেট করুন।</p>
+<input type="email" class="license-input" id="licEmail" placeholder="আপনার ইমেইল">
+<input type="text" class="license-input" id="licKey" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19">
+<button class="btn" onclick="activateLicense()">অ্যাক্টিভেট করুন</button>
+<div class="license-status-msg" id="licStatus"></div>
+<div style="margin-top:1rem;padding:0.7rem;background:var(--bg);border-radius:10px;border:1px dashed var(--line);">
+<div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.4rem;">🧪 <strong>টেস্ট করতে ব্যবহার করুন:</strong></div>
+<div style="font-family:monospace;font-size:0.85rem;color:var(--accent);cursor:pointer;" onclick="fillDemoKey()">DEMO-2026-LIFE-OSXX</div>
+<div style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem;">↑ ট্যাপ করে অটো-ফিল করুন</div>
+</div>
+</div>
+
+<p style="color:var(--muted);font-size:0.78rem;margin-top:1.5rem;">
+লাইসেন্স নেই? <a href="#" style="color:var(--accent);text-decoration:none;" onclick="showToast('ডইরেক্ট মার্কেটিং-এ যোগাযোগ করুন')">ক্রয় করুন</a>
+</p>
+</div>
+
+</div>
+
+<div class="bottom-nav" id="bottomNav">
+<button class="nav-item active" onclick="navTo('home')"><span class="nav-icon">📅</span><span>আজ</span></button>
+<button class="nav-item" onclick="navTo('money')"><span class="nav-icon">💰</span><span>অর্থ</span></button>
+<button class="nav-item" onclick="navTo('diary')"><span class="nav-icon">📓</span><span>ডায়েরি</span></button>
+<button class="nav-item" onclick="navTo('goals')"><span class="nav-icon">🎯</span><span>লক্ষ্য</span></button>
+<button class="nav-item" onclick="navTo('habits')"><span class="nav-icon">🔄</span><span>অভ্যাস</span></button>
+<button class="nav-item" onclick="navTo('more')"><span class="nav-icon">☰</span><span>আরও</span></button>
+</div>
+</div>
+
+<div id="toast"></div>
+<script>
+// ===================== DEFAULT DATA =====================
+const defaultSchedule=[
+{time:"06:00",title:"ঘুম থেকে ওঠা ও ধ্যান",desc:"প্রভাতে ধ্যান বা পূজা — মন প্রশান্ত করুন",done:false},
+{time:"06:30",title:"হালকা ব্যায়াম / যোগ",desc:"৩০ মিনিট স্ট্রেচিং বা হাঁটা",done:false},
+{time:"07:00",title:"স্নান ও প্রাতঃরাশ",desc:"পুষ্টিকর খাবার — ফল, দুধ, ডিম",done:false},
+{time:"07:30",title:"দিনের প্ল্যান রিভিউ",desc:"LIFE OS-এ আজকের কাজ দেখুন",done:false},
+{time:"08:00",title:"Affirmation ও Visualization",desc:"ইতিবাচক চিন্তা ও স্বপ্নের কল্পনা",done:false},
+{time:"09:00",title:"Deep Work — গুরুত্বপূর্ণ কাজ",desc:"সবচেয়ে গুরুত্বপূর্ণ কাজটি করুন",done:false,priority:"high"},
+{time:"11:00",title:"দ্বিতীয় পর্যায়ের কাজ",desc:"ইমেইল, কল, মিটিং",done:false},
+{time:"13:00",title:"মধ্যাহ্নভোজ ও বিশ্রাম",desc:"হালকা খাবার, ২০ মিনিট বিশ্রাম",done:false},
+{time:"14:00",title:"নতুন দক্ষতা শেখা",desc:"বই, কোর্স, বা অনুশীলন — ৩০ মিনিট",done:false},
+{time:"15:00",title:"আফটারনুন Work Block",desc:"দ্বিতীয় Deep Work সেশন",done:false},
+{time:"17:00",title:"ব্যায়াম / ফিটনেস",desc:"জিম, রানিং, বা হোম ওয়ার্কআউট",done:false},
+{time:"18:00",title:"পরিবারের সময়",desc:"পরিবারের সঙ্গে সময় কাটান",done:false},
+{time:"19:00",title:"সন্ধ্যার ধ্যান / পূজা",desc:"সন্ধ্যায মন প্রশান্ত করুন",done:false},
+{time:"19:30",title:"হালকা পড়াশোনা / শখ",desc:"বই পড়া, লেখা, বা শখের কাজ",done:false},
+{time:"20:30",title:"রাতের ধ্যান / প্রার্থনা",desc:"দিন শেষে কৃতজ্ঞতা",done:false},
+{time:"21:00",title:"দিনের রিভিউ ও কালের প্ল্যান",desc:"LIFE OS-এ আজকের রিভিউ লিখুন",done:false,priority:"high"},
+{time:"21:30",title:"ডায়েরি লেখা",desc:"আজকের অনুভূতি ও শিক্ষা লিখুন",done:false},
+{time:"22:00",title:"ডিজিটাল ডিটক্স",desc:"ফোন বন্ধ, প্রস্তুতি ঘুমাতে যাওয়ার",done:false},
+{time:"22:30",title:"ঘুমাতে যাওয়া",desc:"প্রতিদিন ৭-৮ ঘণ্টা ঘুম লক্ষ্য",done:false},
+];
+
+const defaultAffirmations=[
+"আমি প্রতিদিন উন্নতি করছি। আমি আমার লক্ষ্যের কাছাকাছি যাচ্ছি। আজকের দিনটি আমার।",
+"আমি কৃতজ্ঞ। আমার জীবনে যা আছে তার জন্য ধন্যবাদ। আরও ভালো আসছে।",
+"আমি শক্তিশালী। আমি যেকোনো চ্যালেঞ্জ মোকাবেলা করতে পারি।",
+"আমি ধৈর্যশীল। ছোট ছোট পদক্ষেপেই বড় পরিবর্তন আসে।",
+"আমি আত্মবিশ্বাসী। আমি আমার স্বপ্ন অর্জন করতে পারব।",
+];
+
+const defaultHabits=[
+{id:1,name:"ঘুমাতে যাওয়া",streak:12,days:[1,1,1,1,1,1,0]},
+{id:2,name:"ব্যায়াম",streak:8,days:[1,1,0,1,1,1,0]},
+{id:3,name:"পড়াশোনা",streak:15,days:[1,1,1,1,1,1,1]},
+{id:4,name:"ধ্যান / পূজা",streak:20,days:[1,1,1,1,1,1,1]},
+{id:5,name:"ডায়েরি",streak:5,days:[1,0,1,1,0,1,0]},
+{id:6,name:"জল পান",streak:7,days:[1,1,0,1,1,1,0]},
+];
+
+const defaultGoals=[
+{id:1,title:"ওজন ১০ কেজি কমানো",period:"yearly",target:10,current:4.5,unit:"কেজি"},
+{id:2,title:"১২টি বই পড়া",period:"monthly",target:12,current:8,unit:"বই"},
+{id:3,title:"প্রতিদিন ৩০ মিনিট ধ্যান",period:"weekly",target:7,current:6,unit:"দিন"},
+{id:4,title:"৮ গ্লাস জল পান",period:"daily",target:8,current:5,unit:"গ্লাস"},
+];
+
+const defaultTransactions=[
+{id:1,desc:"বেতন",amount:50000,type:"income",category:"salary",date:"2026-10-01",demo:true},
+{id:2,desc:"বাড়ি ভাড়া",amount:15000,type:"expense",category:"rent",date:"2026-10-03",demo:true},
+{id:3,desc:"খাবার",amount:8000,type:"expense",category:"food",date:"2026-10-05",demo:true},
+{id:4,desc:"জল / বিদ্যুৎ",amount:2500,type:"expense",category:"utilities",date:"2026-10-08",demo:true},
+{id:5,desc:"সঞ্চয়",amount:10000,type:"savings",category:"savings",date:"2026-10-10",demo:true},
+];
+
+const defaultLearning=[
+{id:1,title:"Atomic Habits — James Clear",type:"book",status:"reading",note:"প্রতিদিন ১০ পৃষ্ঠা",added:"2026-10-01"},
+{id:2,title:"Python Programming",type:"course",status:"reading",note:"Code Academy — মডিউল ৩",added:"2026-10-05"},
+{id:3,title:"গিটার শেখা",type:"skill",status:"planned",note:"প্রতিদিন ২০ মিনিট অনুশীলন",added:"2026-10-10"},
+];
+
+const dayNames=["রবি","সোম","মঙ্গল","বুধ","বৃহঃ","শুক্র","শনি"];
+const monthNames=["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"];
+
+function formatBanglaDate(date){
+return dayNames[date.getDay()]+", "+date.getDate()+" "+monthNames[date.getMonth()];
+}
+function getTodayStr(){return new Date().toISOString().split('T')[0];}
+function getWeekKey(){const d=new Date();d.setDate(d.getDate()-d.getDay());return d.toISOString().split('T')[0];}
+function generateId(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5);}
+
+// ===================== DATA STORE =====================
+function getInitialData(){
+return{
+schedule:JSON.parse(JSON.stringify(defaultSchedule)),
+diary:{},
+weeklyReviews:{},
+notes:[],
+history:generateDemoHistory(),
+license:null,
+profile:{name:"আপনার নাম",mode:"Professional",photo:null,joined:getTodayStr()},
+transactions:JSON.parse(JSON.stringify(defaultTransactions)),
+goals:JSON.parse(JSON.stringify(defaultGoals)),
+habits:JSON.parse(JSON.stringify(defaultHabits)),
+affirmations:JSON.parse(JSON.stringify(defaultAffirmations)),
+visionBoard:"",gratitude:"",
+learning:JSON.parse(JSON.stringify(defaultLearning)),
+moneyDemoCleared:false,
+};
+}
+
+let appData=JSON.parse(localStorage.getItem('lifeOSData_v5'))||getInitialData();
+function saveData(){localStorage.setItem('lifeOSData_v5',JSON.stringify(appData));}
+
+function generateDemoHistory(){
+const h=[];const today=new Date();
+for(let i=6;i>=0;i--){
+const d=new Date(today);d.setDate(d.getDate()-i);
+const pct=Math.floor(55+Math.random()*40);
+h.push({date:d.toISOString().split('T')[0],displayDate:formatBanglaDate(d),completed:Math.floor(pct/100*19),total:19,percent:pct,diary:i===0?"":"আজকের দিনটি ভালো কাটলো। কাজের অগ্রগতি সন্তোষজনক।"});
+}
+return h;
+}
+
+// ===================== UTILITIES =====================
+function showToast(msg){
+const t=document.getElementById('toast');
+t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';
+setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(100px)';},2500);
+}
+function getCurrentTime(){const n=new Date();return n.getHours()*60+n.getMinutes();}
+function timeToMinutes(ts){const[h,m]=ts.split(':').map(Number);return h*60+m;}
+
+// ===================== NAVIGATION =====================
+function navTo(screen){
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+document.getElementById('screen-'+screen).classList.add('active');
+document.querySelectorAll('.nav-item').forEach((n,i)=>{
+const map={home:0,money:1,diary:2,goals:3,habits:4,more:5,vision:4,learning:4,history:2,ai:4};
+n.classList.toggle('active',i===map[screen]);
+});
+document.querySelector('.app-content').scrollTop=0;
+if(screen==='money')renderMoney();
+}
+
+// ===================== HEADER =====================
+function updateHeaderDate(){
+const now=new Date();
+document.getElementById('headerDate').textContent=formatBanglaDate(now);
+const el=document.getElementById('todayDateDisplay');
+if(el)el.textContent=formatBanglaDate(now);
+}
+
+// ===================== SCHEDULE =====================
+function renderSchedule(){
+const container=document.getElementById('timeSchedule');
+if(!container)return;
+const currentMin=getCurrentTime();
+let completedCount=0;
+let html='';
+appData.schedule.forEach((slot,idx)=>{
+const slotMin=timeToMinutes(slot.time);
+const isNow=Math.abs(currentMin-slotMin)<30;
+if(slot.done)completedCount++;
+const[h,m]=slot.time.split(':');
+const hour=parseInt(h);
+const ampm=hour<12?'সকাল':(hour<17?'দুপুর':'রাত');
+const displayHour=hour<=12?hour:hour-12;
+const timeLabel=`${ampm} ${displayHour}:${m}`;
+html+=`<div class="time-slot" data-idx="${idx}">
+<div class="time-badge ${isNow?'now':''}">${timeLabel}</div>
+<div class="slot-content">
+<input type="text" class="slot-title-input" value="${slot.title}" onchange="updateSlotTitle(${idx},this.value)" onblur="saveScheduleData()">
+<input type="text" class="slot-desc-input" value="${slot.desc||''}" onchange="updateSlotDesc(${idx},this.value)" onblur="saveScheduleData()">
+<div class="slot-actions">
+<button class="slot-action-btn" onclick="moveSlot(${idx},-1)">↑</button>
+<button class="slot-action-btn" onclick="moveSlot(${idx},1)">↓</button>
+<button class="slot-action-btn" onclick="deleteSlot(${idx})">🗑️</button>
+</div>
+</div>
+<div class="slot-check ${slot.done?'checked':''}" onclick="toggleSlot(${idx})"></div>
+</div>`;
+});
+container.innerHTML=html;
+const total=appData.schedule.length;
+const pending=total-completedCount;
+const pct=total>0?Math.round((completedCount/total)*100):0;
+document.getElementById('statCompleted').textContent=completedCount;
+document.getElementById('statPending').textContent=pending;
+document.getElementById('statPercent').textContent=pct+'%';
+const todayStr=getTodayStr();
+const todayEntry=appData.history.find(h=>h.date===todayStr);
+if(todayEntry){todayEntry.completed=completedCount;todayEntry.percent=pct;saveData();}
+}
+function toggleSlot(idx){appData.schedule[idx].done=!appData.schedule[idx].done;saveData();renderSchedule();renderHistory();showToast(appData.schedule[idx].done?'✅ সম্পন্ন!':'↩️ বাতিল');}
+function updateSlotTitle(idx,val){appData.schedule[idx].title=val;}
+function updateSlotDesc(idx,val){appData.schedule[idx].desc=val;}
+function saveScheduleData(){saveData();showToast('💾 সময়সূচি সেভ হয়েছে');}
+function moveSlot(idx,dir){
+const newIdx=idx+dir;
+if(newIdx<0||newIdx>=appData.schedule.length)return;
+const temp=appData.schedule[idx];appData.schedule[idx]=appData.schedule[newIdx];appData.schedule[newIdx]=temp;
+saveData();renderSchedule();
+}
+function deleteSlot(idx){
+if(!confirm('এই কাজটি মুছবেন?'))return;
+appData.schedule.splice(idx,1);saveData();renderSchedule();showToast('🗑️ মুছে ফেলা হয়েছে');
+}
+function resetSchedule(){
+if(!confirm('সময়সূচি ডিফল্টে ফিরি়ে আনবেন?'))return;
+appData.schedule=JSON.parse(JSON.stringify(defaultSchedule));saveData();renderSchedule();showToast('🔄 ডিফল্ট সময়সূচি লোড হয়েছে');
+}
+
+// ===================== AFFIRMATION =====================
+function setDailyAffirmation(){
+const el=document.getElementById('dailyAffirmation');
+if(el)el.textContent=appData.affirmations[new Date().getDate()%appData.affirmations.length];
+}
+
+// ===================== MONEY — FIXED =====================
+function renderMoney(){
+const income=appData.transactions.filter(t=>t.type==='income').reduce((a,b)=>a+b.amount,0);
+const expense=appData.transactions.filter(t=>t.type==='expense').reduce((a,b)=>a+b.amount,0);
+const savings=appData.transactions.filter(t=>t.type==='savings').reduce((a,b)=>a+b.amount,0);
+const budget=50000;
+const used=expense;
+const remaining=budget-used;
+const pct=Math.min(100,Math.round((used/budget)*100));
+
+const incEl=document.getElementById('totalIncome');
+const expEl=document.getElementById('totalExpense');
+const savEl=document.getElementById('totalSavings');
+const progEl=document.getElementById('budgetProgress');
+const pctEl=document.getElementById('budgetPercent');
+const remEl=document.getElementById('budgetRemaining');
+const demoNotice=document.getElementById('demoMoneyNotice');
+
+if(incEl)incEl.textContent='৳ '+income.toLocaleString('bn-BD');
+if(expEl)expEl.textContent='৳ '+expense.toLocaleString('bn-BD');
+if(savEl)savEl.textContent='৳ '+savings.toLocaleString('bn-BD');
+if(progEl)progEl.style.width=pct+'%';
+if(pctEl)pctEl.textContent=pct+'%';
+if(remEl)remEl.textContent='৳ '+remaining.toLocaleString('bn-BD');
+
+// Show demo notice if demo data still exists
+const hasDemo=appData.transactions.some(t=>t.demo===true);
+if(demoNotice)demoNotice.style.display=hasDemo?'block':'none';
+
+const list=document.getElementById('transactionList');
+if(!list)return;
+if(appData.transactions.length===0){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">💰</div><div>কোনো লেনদেন নেই। উপরে যোগ করুন!</div></div>';return;}
+list.innerHTML=appData.transactions.slice().reverse().map(tx=>{
+const isInc=tx.type==='income';const isSav=tx.type==='savings';
+const catEmoji={salary:'💼',food:'🍽️',rent:'🏠',transport:'🚌',utilities:'💡',education:'📚',health:'🏥',entertainment:'🎬',savings:'🏦',other:'📦'}[tx.category]||'💰';
+return `<div class="tx-row">
+<div class="tx-icon ${isInc?'income':(isSav?'savings':'expense')}">${catEmoji}</div>
+<div class="tx-details"><div class="tx-title">${tx.desc}</div><div class="tx-date">${tx.date} · ${tx.category}</div></div>
+<div class="tx-amount ${isInc?'income':(isSav?'savings':'expense')}">${isInc||isSav?'+':'-'}৳${tx.amount.toLocaleString('bn-BD')}</div>
+</div>`;
+}).join('');
+}
+
+function addTransaction(){
+const desc=document.getElementById('txDesc').value.trim();
+const amount=parseFloat(document.getElementById('txAmount').value);
+const type=document.getElementById('txType').value;
+const date=document.getElementById('txDate').value||getTodayStr();
+const category=document.getElementById('txCategory').value||'other';
+if(!desc||!amount||amount<=0){showToast('❌ বিবরণ ও টাকার পরিমাণ দিন!');return;}
+
+// 🎯 FIX: Clear all demo transactions on first real transaction
+if(!appData.moneyDemoCleared){
+appData.transactions=appData.transactions.filter(t=>!t.demo);
+appData.moneyDemoCleared=true;
+showToast('🗑️ ডেমো ডেটা সরে গেছে! এখন শুধু আপনার লেনদেন দেখাবে।');
+}
+
+appData.transactions.push({id:generateId(),desc,amount,type,category,date,demo:false});
+saveData();renderMoney();
+document.getElementById('txDesc').value='';document.getElementById('txAmount').value='';document.getElementById('txCategory').value='';
+showToast('💰 লেনদেন যোগ হয়েছে!');
+}
+
+// ===================== GOALS =====================
+function renderGoals(){
+const container=document.getElementById('goalsList');
+if(!container)return;
+if(appData.goals.length===0){container.innerHTML='<div class="empty-state"><div class="empty-state-icon">🎯</div><div>কোনো লক্ষ্য নেই। উপরে যোগ করুন!</div></div>';return;}
+container.innerHTML=appData.goals.map(g=>{
+const pct=Math.min(100,Math.round((g.current/g.target)*100));
+const periodLabel={daily:'দৈনিক',weekly:'সাপ্তাহিক',monthly:'মাসিক',yearly:'বার্ষিক'}[g.period]||g.period;
+return `<div class="goal-item">
+<div class="goal-header"><div class="goal-title">${periodLabel}: ${g.title}</div><button class="goal-delete" onclick="deleteGoal('${g.id}')">🗑️</button></div>
+<div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+<div class="goal-meta"><span>🎯 ${g.current} / ${g.target} ${g.unit}</span><span>${pct}%</span></div>
+<div class="btn-row" style="margin-top:0.4rem;"><button class="btn btn-sm btn-success" onclick="updateGoal('${g.id}',1)">+ অগ্রগতি</button><button class="btn btn-sm btn-outline" onclick="updateGoal('${g.id}',-1)">- কমান</button></div>
+</div>`;
+}).join('');
+}
+function addGoal(){
+const title=document.getElementById('goalTitle').value.trim();
+const period=document.getElementById('goalPeriod').value;
+const target=parseFloat(document.getElementById('goalTarget').value);
+const unit=document.getElementById('goalUnit').value.trim()||'টি';
+if(!title||!target){showToast('❌ লক্ষ্য ও পরিমাণ দিন!');return;}
+appData.goals.push({id:generateId(),title,period,target,current:0,unit});
+saveData();renderGoals();
+document.getElementById('goalTitle').value='';document.getElementById('goalTarget').value='';document.getElementById('goalUnit').value='';
+showToast('🎯 লক্ষ্য যোগ হয়েছে!');
+}
+function deleteGoal(id){if(!confirm('এই লক্ষ্য মুছবেন?'))return;appData.goals=appData.goals.filter(g=>g.id!==id);saveData();renderGoals();showToast('🗑️ মুছে ফেলা হয়েছে');}
+function updateGoal(id,delta){
+const g=appData.goals.find(x=>x.id===id);
+if(g){g.current=Math.max(0,Math.min(g.target,g.current+delta));saveData();renderGoals();}
+}
+
+// ===================== HABITS =====================
+function renderHabits(){
+const container=document.getElementById('habitsList');
+if(!container)return;
+if(appData.habits.length===0){container.innerHTML='<div class="empty-state"><div class="empty-state-icon">🔄</div><div>কোনো অভ্যাস নেই। উপরে যোগ করুন!</div></div>';return;}
+container.innerHTML=appData.habits.map(h=>{
+const todayIdx=new Date().getDay();
+return `<div class="habit-card">
+<button class="habit-delete" onclick="deleteHabit('${h.id}')">🗑️</button>
+<div class="habit-streak">${h.streak}</div>
+<div class="habit-name">দিন ${h.name}</div>
+<div class="habit-track-row">
+${h.days.map((d,i)=>`<div class="h-track-day ${d?'done':''} ${i===todayIdx?'today':''}" onclick="toggleHabitDay('${h.id}',${i})">${dayNames[i]}</div>`).join('')}
+</div>
+</div>`;
+}).join('');
+}
+function addHabit(){
+const name=document.getElementById('habitName').value.trim();
+if(!name){showToast('❌ অভ্যাসের নাম দিন!');return;}
+appData.habits.push({id:generateId(),name,streak:0,days:[0,0,0,0,0,0,0]});
+saveData();renderHabits();document.getElementById('habitName').value='';showToast('🔄 অভ্যাস যোগ হয়েছে!');
+}
+function deleteHabit(id){if(!confirm('এই অভ্যাস মুছবেন?'))return;appData.habits=appData.habits.filter(h=>h.id!==id);saveData();renderHabits();showToast('🗑️ মুছে ফেলা হয়েছে');}
+function toggleHabitDay(id,dayIdx){
+const h=appData.habits.find(x=>x.id===id);
+if(h){h.days[dayIdx]=h.days[dayIdx]?0:1;h.streak=h.days.reduce((a,b)=>a+b,0);saveData();renderHabits();}
+}
+
+// ===================== VISION =====================
+function renderVision(){
+const list=document.getElementById('affirmationList');
+if(!list)return;
+if(appData.affirmations.length===0){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">✨</div><div>কোনো Affirmation নেই। উপরে যোগ করুন!</div></div>';return;}
+list.innerHTML=appData.affirmations.map((a,i)=>`<div class="affirmation-item">${a}<button class="del-btn" onclick="deleteAffirmation(${i})">🗑️</button></div>`).join('');
+const vb=document.getElementById('visionBoard');
+if(vb)vb.value=appData.visionBoard||'';
+const gj=document.getElementById('gratitudeJournal');
+if(gj)gj.value=appData.gratitude||'';
+}
+function addAffirmation(){
+const text=document.getElementById('newAffirmation').value.trim();
+if(!text){showToast('❌ Affirmation লিখুন!');return;}
+appData.affirmations.push(text);saveData();renderVision();document.getElementById('newAffirmation').value='';showToast('✨ যোগ হয়েছে!');
+}
+function deleteAffirmation(idx){appData.affirmations.splice(idx,1);saveData();renderVision();showToast('🗑️ মুছে ফেলা হয়েছে');}
+function saveVisionBoard(){appData.visionBoard=document.getElementById('visionBoard').value.trim();saveData();showToast('💾 সেভ হয়েছে!');}
+function saveGratitude(){appData.gratitude=document.getElementById('gratitudeJournal').value.trim();saveData();showToast('💾 সেভ হয়েছে!');}
+
+// ===================== LEARNING =====================
+function renderLearning(){
+const container=document.getElementById('learningList');
+if(!container)return;
+if(appData.learning.length===0){container.innerHTML='<div class="empty-state"><div class="empty-state-icon">📚</div><div>কোনো শেখার আইটেম নেই। উপরে যোগ করুন!</div></div>';return;}
+const typeEmoji={book:'📖',course:'🎓',skill:'🛠️',training:'🏋️',language:'🗣️'};
+const statusClass={planned:'status-planned',reading:'status-reading',completed:'status-completed'};
+const statusLabel={planned:'পরিকল্পিত',reading:'চলছে',completed:'সম্পন্ন'};
+container.innerHTML=appData.learning.map(l=>`
+<div class="learning-item">
+<div class="learning-icon">${typeEmoji[l.type]||'📚'}</div>
+<div class="learning-info">
+<div class="learning-title">${l.title}</div>
+<div class="learning-meta">${l.note||''} · ${l.added}</div>
+</div>
+<div class="learning-status ${statusClass[l.status]||'status-planned'}">${statusLabel[l.status]||l.status}</div>
+<button class="goal-delete" onclick="deleteLearning('${l.id}')">🗑️</button>
+</div>`).join('');
+}
+function addLearning(){
+const title=document.getElementById('learnTitle').value.trim();
+const type=document.getElementById('learnType').value;
+const status=document.getElementById('learnStatus').value;
+const note=document.getElementById('learnNote').value.trim();
+if(!title){showToast('❌ শেখার বিষয় লিখুন!');return;}
+appData.learning.push({id:generateId(),title,type,status,note,added:getTodayStr()});
+saveData();renderLearning();
+document.getElementById('learnTitle').value='';document.getElementById('learnNote').value='';
+showToast('📚 যোগ হয়েছে!');
+}
+function deleteLearning(id){if(!confirm('মুছবেন?'))return;appData.learning=appData.learning.filter(l=>l.id!==id);saveData();renderLearning();showToast('🗑️ মুছে ফেলা হয়েছে');}
+
+// ===================== DIARY =====================
+function switchDiaryTab(tab){
+document.querySelectorAll('.diary-tab').forEach(t=>t.classList.remove('active'));
+document.querySelectorAll('.diary-panel').forEach(p=>p.classList.remove('active'));
+event.target.classList.add('active');
+document.getElementById('diary-panel-'+tab).classList.add('active');
+if(tab==='past')renderPastDiary();
+}
+function saveDiary(type){
+const key=type==='today'?getTodayStr():getTomorrowStr();
+const content=document.getElementById('diary'+(type==='today'?'Today':'Tomorrow')).value.trim();
+if(!content){showToast('❌ কিছু লিখুন!');return;}
+appData.diary[key]={content,savedAt:new Date().toISOString(),type};
+saveData();showToast('💾 সেভ হয়েছে!');
+if(type==='today')renderHistory();
+}
+function getTomorrowStr(){const d=new Date();d.setDate(d.getDate()+1);return d.toISOString().split('T')[0];}
+function renderPastDiary(){
+const list=document.getElementById('pastDiaryList');
+if(!list)return;
+const entries=Object.entries(appData.diary).sort((a,b)=>b[0].localeCompare(a[0]));
+if(entries.length===0){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">📭</div><div>এখনো কোনো রেকর্ড নেই। আজ থেকে শুরু করুন!</div></div>';return;}
+list.innerHTML=entries.map(([date,data])=>{
+const d=new Date(date+'T00:00:00');
+return `<div class="diary-entry" onclick="loadDiaryEntry('${date}')">
+<div class="diary-entry-date">${formatBanglaDate(d)} ${data.type==='tomorrow'?'(কালের প্ল্যান)':''}</div>
+<div class="diary-entry-preview">${data.content.substring(0,90)}...</div>
+</div>`;
+}).join('');
+}
+function loadDiaryEntry(date){
+const data=appData.diary[date];if(!data)return;
+document.querySelectorAll('.diary-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+document.querySelectorAll('.diary-panel').forEach((p,i)=>p.classList.toggle('active',i===0));
+document.getElementById('diaryToday').value=data.content;
+showToast('📓 ডায়েরি লোড হয়েছে');
+}
+function saveWeeklyReview(){
+const content=document.getElementById('weeklyReviewInput').value.trim();
+if(!content){showToast('❌ কিছু লিখুন!');return;}
+appData.weeklyReviews[getWeekKey()]={content,savedAt:new Date().toISOString()};
+saveData();showToast('💾 সাপ্তাহিক রিভিউ সেভ হয়েছে');
+}
+function saveQuickNote(){
+const note=document.getElementById('quickNote').value.trim();
+if(!note){showToast('❌ নোট লিখুন!');return;}
+appData.notes.unshift({text:note,time:new Date().toISOString()});
+saveData();document.getElementById('quickNote').value='';renderQuickNotes();showToast('💾 নোট সেভ হয়েছে');
+}
+function renderQuickNotes(){
+const container=document.getElementById('quickNotesList');
+if(!container)return;
+if(appData.notes.length===0){container.innerHTML='';return;}
+container.innerHTML=appData.notes.slice(0,5).map(n=>`<div style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:0.6rem 0.8rem;margin-bottom:0.35rem;font-size:0.84rem;">${n.text}</div>`).join('');
+}
+
+// ===================== HISTORY =====================
+function renderHistory(){
+const container=document.getElementById('historyList');
+if(!container)return;
+const todayStr=getTodayStr();
+const completedCount=appData.schedule.filter(s=>s.done).length;
+const pct=appData.schedule.length>0?Math.round((completedCount/appData.schedule.length)*100):0;
+const todayEntry=appData.history.find(h=>h.date===todayStr);
+if(todayEntry){todayEntry.completed=completedCount;todayEntry.percent=pct;}
+container.innerHTML=appData.history.slice().reverse().map(h=>`
+<div class="history-item">
+<div class="history-item-header"><span class="history-item-date">${h.displayDate}</span><span class="history-item-badge">${h.percent}%</span></div>
+<div style="font-size:0.83rem;color:var(--muted);">✅ ${h.completed}/${h.total} কাজ সম্পন্ন</div>
+<div class="history-progress-row"><div class="history-progress-bar"><div class="history-progress-fill" style="width:${h.percent}%"></div></div><span class="history-progress-text">${h.percent}%</span></div>
+</div>`).join('');
+const weekData=appData.history.slice(-7);
+const avgPct=weekData.length>0?Math.round(weekData.reduce((a,b)=>a+b.percent,0)/weekData.length):0;
+const bestDay=weekData.length>0?weekData.reduce((a,b)=>a.percent>b.percent?a:b):{percent:0,displayDate:'-'};
+const summary=document.getElementById('weeklySummary');
+if(summary)summary.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:0.8rem;"><div class="stat-box"><div class="num">${avgPct}%</div><div class="lbl">সাপ্তাহিক গড়</div></div><div class="stat-box"><div class="num">${bestDay.percent}%</div><div class="lbl">সেরা দিন</div></div></div><div class="chat-bubble" style="font-size:0.84rem;">💡 <strong>AI পরামর্শ:</strong> ${avgPct<70?'আরও ধারাবাহিক হোন। ছোট লক্ষ্য নিন।':'দারুণ অগ্রগতি! এভাবেই চলুন।'}</div>`;
+}
+function filterHistory(period){
+document.querySelectorAll('.history-filter').forEach(f=>f.classList.remove('active'));
+event.target.classList.add('active');
+showToast('ফিল্টার: '+(period==='week'?'এই সপ্তাহ':period==='month'?'এই মাস':'সব রেকর্ড'));
+}
+
+// ===================== AI CHAT =====================
+function sendAiMessage(){
+const input=document.getElementById('aiInput');
+const msg=input.value.trim();if(!msg)return;
+const area=document.getElementById('aiChatArea');
+const userBubble=document.createElement('div');
+userBubble.className='chat-bubble';userBubble.style.marginLeft='1.5rem';userBubble.style.borderLeft='3px solid var(--success)';
+userBubble.textContent=msg;area.appendChild(userBubble);
+input.value='';area.scrollTop=area.scrollHeight;
+setTimeout(()=>{
+const responses=["💡 আজকের পরামর্শ: সকাল ৬-৯ টা সবচেয়ে উৎপাদনশীল সময়। গুরুত্বপূর্ণ কাজ এই সময়ে সারুন।","📊 আপনার অগ্রগতি দেখে মনে হচ্ছে আপনি সঠিক পথে আছেন। ছোট ছোট পদক্ষেপেই বড় পরিবর্তন আসে।","🎯 আমার পরামর্শ: প্রতিদিন ৩টি গুরুত্বপূর্ণ কাজ বেছে নিন এবং সেগুলোই শেষ করুন।","🧠 মানসি স্বাস্থ্যের জন্য প্রতিদিন ১০ মিনিট ধ্যান করুন। এটি আপনার ফোকাস বাড়াবে।","💰 আজকের বাজেট টিপ: ৫০/৩০/২০ নিয়ম — ৫০% প্রয়োজন, ৩০% চাওয়া, ২০% সঞ্চয়।"," অভ্যাস গঠনের নিয়ম: ২১ দিন একটানা করুন, তারপর এটি স্বাভাবিক হয়ে যাবে।"];
+const aiBubble=document.createElement('div');aiBubble.className='chat-bubble';
+aiBubble.textContent=responses[Math.floor(Math.random()*responses.length)];
+area.appendChild(aiBubble);area.scrollTop=area.scrollHeight;
+},700);
+}
+
+// ===================== PROFILE =====================
+function renderProfile(){
+const p=appData.profile;
+const nameEl=document.getElementById('profileName');
+const modeEl=document.getElementById('profileMode');
+const joinEl=document.getElementById('profileJoinDate');
+const avatar=document.getElementById('profileAvatar');
+const initial=document.getElementById('profileInitial');
+if(nameEl)nameEl.value=p.name;
+if(modeEl)modeEl.value=p.mode;
+if(joinEl)joinEl.textContent=formatBanglaDate(new Date(p.joined+'T00:00:00'));
+if(avatar&&initial){
+if(p.photo){avatar.innerHTML=`<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><div class="edit-overlay">📷 পরিবর্তন</div>`;}
+else{avatar.innerHTML=`<span id="profileInitial">${p.name.charAt(0)}</span><div class="edit-overlay">📷 পরিবর্তন</div>`;}
+}
+}
+function saveProfile(){
+appData.profile.name=document.getElementById('profileName').value.trim()||'আপনার নাম';
+appData.profile.mode=document.getElementById('profileMode').value;
+saveData();renderProfile();showToast('💾 প্রোফাইল সেভ হ়েছে!');
+}
+function updateProfilePhoto(event){
+const file=event.target.files[0];if(!file)return;
+const reader=new FileReader();
+reader.onload=function(e){
+appData.profile.photo=e.target.result;
+saveData();renderProfile();showToast('📷 ছবি আপলোড হয়েছে!');
+};
+reader.readAsDataURL(file);
+}
+
+// ===================== LICENSE =====================
+function fillDemoKey(){
+document.getElementById('licKey').value='DEMO-2026-LIFE-OSXX';
+document.getElementById('licEmail').value='demo@lifeos.app';
+}
+function activateLicense(){
+const key=document.getElementById('licKey').value.trim();
+const email=document.getElementById('licEmail').value.trim();
+const status=document.getElementById('licStatus');
+if(!email||!email.includes('@')){status.textContent="❌ সঠিক ইমেইল দিন।";status.className="license-status-msg show bad";return;}
+if(!key||key.length<10){status.textContent="❌ লাইসেন্স কী দিন।";status.className="license-status-msg show bad";return;}
+if(key.toUpperCase().startsWith('DEMO')){
+status.textContent="✅ ডেমো অ্যাক্টিভেশন সফল! স্বাগতম।";status.className="license-status-msg show ok";
+appData.license={key,email,activatedAt:new Date().toISOString()};saveData();
+setTimeout(()=>{document.getElementById('screen-license').classList.remove('active');document.getElementById('screen-home').classList.add('active');document.getElementById('bottomNav').style.display='flex';},1200);return;
+}
+const pattern=/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+if(!pattern.test(key.toUpperCase())){status.textContent="❌ কী ফরম্যাট সঠিক নয়। XXXX-XXXX-XXXX-XXXX ব্যবহার করুন।";status.className="license-status-msg show bad";return;}
+status.textContent="✅ অ্যাক্টিভেশন সফল! স্বাগতম।";status.className="license-status-msg show ok";
+appData.license={key:key.toUpperCase(),email,activatedAt:new Date().toISOString()};saveData();
+setTimeout(()=>{document.getElementById('screen-license').classList.remove('active');document.getElementById('screen-home').classList.add('active');document.getElementById('bottomNav').style.display='flex';},1200);
+}
+
+// ===================== BACKUP / LOGOUT =====================
+function backupData(){
+const dataStr=JSON.stringify(appData,null,2);
+const blob=new Blob([dataStr],{type:'application/json'});
+const url=URL.createObjectURL(blob);
+const a=document.createElement('a');a.href=url;
+a.download='LIFE_OS_Backup_'+getTodayStr()+'.json';a.click();URL.revokeObjectURL(url);
+showToast('💾 ব্যাকআপ ডাউনলোড হয়েছে!');
+}
+function logout(){
+if(confirm('আপনি কি লগআউট করতে চান?')){
+appData.license=null;saveData();location.reload();
+}
+}
+
+// ===================== PDF EXPORTS =====================
+async function exportDiaryPDF(type){
+const{jsPDF}=window.jspdf;const doc=new jsPDF();
+const key=type==='today'?getTodayStr():getTomorrowStr();
+const data=appData.diary[key];
+const title=type==='today'?'আজকের প্ল্যান':'কালকের প্ল্যান';
+doc.setFontSize(16);doc.text('LIFE OS - '+title,105,20,{align:'center'});
+doc.setFontSize(11);doc.text(formatBanglaDate(new Date(key+'T00:00:00')),105,30,{align:'center'});doc.line(10,35,200,35);
+if(data&&data.content){doc.setFontSize(10);const lines=doc.splitTextToSize(data.content,180);doc.text(lines,15,48);}
+else{doc.setFontSize(10);doc.text('কোনো প্ল্যান লেখা হয়নি।',15,48);}
+doc.setFontSize(8);doc.setTextColor(150);doc.text('LIFE OS — Your Life, Your Way',105,285,{align:'center'});
+doc.save('LIFE_OS_'+type+'_'+key+'.pdf');showToast('📄 PDF ডাউনলোড হয়েছে!');
+}
+async function exportAllDiaryPDF(){
+const{jsPDF}=window.jspdf;const doc=new jsPDF();
+const entries=Object.entries(appData.diary).sort((a,b)=>b[0].localeCompare(a[0]));
+if(entries.length===0){showToast('❌ কোনো রেকর্ড নেই!');return;}
+doc.setFontSize(16);doc.text('LIFE OS — সম্পূর্ণ ডায়েরি রেকর্ড',105,20,{align:'center'});doc.line(10,25,200,25);
+let y=35;entries.forEach(([date,data])=>{if(y>260){doc.addPage();y=20;}const d=new Date(date+'T00:00:00');doc.setFontSize(11);doc.setTextColor(56,189,248);doc.text(formatBanglaDate(d),15,y);doc.setFontSize(9);doc.setTextColor(80);const lines=doc.splitTextToSize(data.content,170);doc.text(lines,15,y+7);y+=7+(lines.length*4.5)+10;});
+doc.setFontSize(8);doc.setTextColor(150);doc.text('LIFE OS — Your Life, Your Way',105,285,{align:'center'});
+doc.save('LIFE_OS_Diary_Records.pdf');showToast('📑 সব রেকর্ড PDF ডাউনলোড হয়েছে!');
+}
+async function exportWeeklyPDF(){
+const{jsPDF}=window.jspdf;const doc=new jsPDF();
+const content=document.getElementById('weeklyReviewInput').value.trim();
+doc.setFontSize(16);doc.text('LIFE OS — সাপ্তাহিক রিভিউ',105,20,{align:'center'});doc.setFontSize(11);doc.text(formatBanglaDate(new Date()),105,30,{align:'center'});doc.line(10,35,200,35);
+doc.setFontSize(10);if(content){const lines=doc.splitTextToSize(content,180);doc.text(lines,15,48);}else{doc.text('কোনো রিভিউ লেখা হয়নি।',15,48);}
+doc.setFontSize(8);doc.setTextColor(150);doc.text('LIFE OS — Your Life, Your Way',105,285,{align:'center'});
+doc.save('LIFE_OS_Weekly_Review.pdf');showToast('📄 PDF ডাউনলোড হয়েছে!');
+}
+async function exportHistoryPDF(){
+const{jsPDF}=window.jspdf;const doc=new jsPDF();
+doc.setFontSize(16);doc.text('LIFE OS — অগ্রগতি রিপোর্ট',105,20,{align:'center'});doc.setFontSize(11);doc.text(formatBanglaDate(new Date()),105,30,{align:'center'});doc.line(10,35,200,35);
+let y=45;appData.history.forEach(h=>{if(y>270){doc.addPage();y=20;}doc.setFontSize(10);doc.setTextColor(56,189,248);doc.text(h.displayDate,15,y);doc.setFontSize(9);doc.setTextColor(80);doc.text(`কাজ সম্পন্ন: ${h.completed}/${h.total} (${h.percent}%)`,15,y+6);y+=18;});
+doc.setFontSize(8);doc.setTextColor(150);doc.text('LIFE OS — Your Life, Your Way',105,285,{align:'center'});
+doc.save('LIFE_OS_Progress_Report.pdf');showToast('📊 রিপোর্ট PDF ডাউনলোড হয়েছে!');
+}
+
+// ===================== INIT =====================
+function init(){
+updateHeaderDate();setDailyAffirmation();
+renderSchedule();renderMoney();renderGoals();renderHabits();renderVision();renderLearning();
+renderHistory();renderQuickNotes();renderProfile();
+
+// Set today's date for transaction date input
+const txDate=document.getElementById('txDate');
+if(txDate)txDate.value=getTodayStr();
+
+// Check license
+if(!appData.license){
+document.getElementById('bottomNav').style.display='none';
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+document.getElementById('screen-license').classList.add('active');
+}
+
+// Enter key handlers
+const aiInput=document.getElementById('aiInput');
+if(aiInput)aiInput.addEventListener('keypress',function(e){if(e.key==='Enter')sendAiMessage();});
+
+// Update schedule every minute
+setInterval(renderSchedule,60000);
+}
+
+init();
+</script>
+</body>
+</html>
